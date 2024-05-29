@@ -281,10 +281,12 @@ class LlavaForConditionalGeneration(LlavaPreTrainedModel):
         # Compute the maximum embed dimension
         max_embed_dim = (num_special_image_tokens.max() *
                          (num_image_patches - 1)) + sequence_length
-        nonzero_result = ops.nonzero(
-            input_ids != self.config.image_token_index)
-        batch_indices = nonzero_result[:, 0]
-        non_image_indices = nonzero_result[:, 1]
+        # nonzero_result = ops.nonzero(
+        #     input_ids != self.config.image_token_index)
+        # batch_indices = nonzero_result[:, 0]
+        # non_image_indices = nonzero_result[:, 1]
+        nonzero = ops.nonzero(input_ids != self.config.image_token_index)
+        batch_indices, non_image_indices = ops.tensor_split(nonzero, 2, -1)
 
         # 2. Compute the positions where text should be written
         # Calculate new positions for text tokens in merged image-text sequence.
@@ -342,9 +344,11 @@ class LlavaForConditionalGeneration(LlavaPreTrainedModel):
                         1).masked_fill((final_attention_mask == 0), 1)
 
         # 6. Mask out the embedding at padding positions, as we later use the past_key_value value to determine the non-attended tokens.
-        nonzero_result = ops.nonzero(input_ids == self.pad_token_id)
-        batch_indices = nonzero_result[:, 0]
-        pad_indices = nonzero_result[:, 1]
+        # nonzero_result = ops.nonzero(input_ids == self.pad_token_id)
+        # batch_indices = nonzero_result[:, 0]
+        # pad_indices = nonzero_result[:, 1]
+        nonzero = ops.nonzero(input_ids == self.pad_token_id)
+        batch_indices, pad_indices = ops.tensor_split(nonzero, 2, -1)
         indices_to_mask = new_token_positions[batch_indices, pad_indices]
 
         final_embedding[batch_indices.asnumpy().tolist(
@@ -402,7 +406,7 @@ class LlavaForConditionalGeneration(LlavaPreTrainedModel):
         "USER:  \nWhat's the content of the image? ASSISTANT: The image features a busy city street with a stop sign prominently displayed"
         ```"""
 
-        attention_mask = attention_mask.astype(ms.int64)
+        # attention_mask = attention_mask.astype(ms.int64)
 
         output_attentions = output_attentions if output_attentions is not None else self.config.output_attentions
         output_hidden_states = (
@@ -453,10 +457,12 @@ class LlavaForConditionalGeneration(LlavaPreTrainedModel):
                 first_layer_past_key_value = past_key_values[0][0][:, :, :, 0]
 
                 # Sum all dimensions of head_dim (-2) to avoid random errors such as: https://github.com/huggingface/transformers/pull/28032#issuecomment-1863691941
-                nonzero_result = ops.nonzero(
-                    first_layer_past_key_value.float().sum(-2) == 0)
-                batch_index = nonzero_result[:, 0]
-                non_attended_tokens = nonzero_result[:, 1]
+                # nonzero_result = ops.nonzero(
+                #     first_layer_past_key_value.float().sum(-2) == 0)
+                # batch_index = nonzero_result[:, 0]
+                # non_attended_tokens = nonzero_result[:, 1]
+                nonzero = ops.nonzero(first_layer_past_key_value.float().sum(-2) == 0)
+                batch_index, non_attended_tokens = ops.tensor_split(nonzero, 2, -1)
 
                 # Get the target length
                 target_length = input_ids.shape[1]
@@ -500,8 +506,10 @@ class LlavaForConditionalGeneration(LlavaPreTrainedModel):
             # Shift so that tokens < n predict n
             if attention_mask is not None:
                 shift_attention_mask = attention_mask[..., 1:]
-                shift_logits = logits[..., :-1, :][shift_attention_mask != 0]
-                shift_labels = labels[..., 1:][shift_attention_mask != 0]
+                # shift_logits = logits[..., :-1, :][shift_attention_mask != 0]
+                # shift_labels = labels[..., 1:][shift_attention_mask != 0]
+                shift_logits = logits[..., :-1, :][ops.ne(shift_attention_mask, 0)]
+                shift_labels = labels[..., 1:][ops.ne(shift_attention_mask, 0)]
             else:
                 shift_logits = logits[..., :-1, :]
                 shift_labels = labels[..., 1:]
@@ -558,7 +566,7 @@ class LlavaForConditionalGeneration(LlavaPreTrainedModel):
         if attention_mask is not None and position_ids is None:
             # create position_ids on the fly for batch generation
             position_ids = attention_mask.long().cumsum(-1) - 1
-            position_ids.masked_fill(attention_mask == 0, 1)
+            position_ids = position_ids.masked_fill(attention_mask == 0, 1)
             if past_key_values:
                 position_ids = position_ids[:, -input_ids.shape[1]:]
 
