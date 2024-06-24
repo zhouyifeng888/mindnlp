@@ -73,6 +73,7 @@ from . import (
     efficientformer,
     electra,
     encodec,
+    encoder_decoder,
     esm,
     ernie,
     ernie_m,
@@ -137,6 +138,7 @@ from . import (
     phi3,
     poolformer,
     pop2piano,
+    prophetnet,
     qwen2,
     qwen2_moe,
     reformer,
@@ -242,6 +244,7 @@ from .efficientnet import *
 from .efficientformer import *
 from .electra import *
 from .encodec import *
+from .encoder_decoder import *
 from .esm import *
 from .ernie import *
 from .ernie_m import *
@@ -306,6 +309,7 @@ from .phi import *
 from .phi3 import *
 from .poolformer import *
 from .pop2piano import *
+from .prophetnet import *
 from .qwen2 import *
 from .qwen2_moe import *
 from .reformer import *
@@ -410,6 +414,7 @@ __all__.extend(efficientnet.__all__)
 __all__.extend(efficientformer.__all__)
 __all__.extend(electra.__all__)
 __all__.extend(encodec.__all__)
+__all__.extend(encoder_decoder.__all__)
 __all__.extend(ernie.__all__)
 __all__.extend(ernie_m.__all__)
 __all__.extend(esm.__all__)
@@ -474,6 +479,7 @@ __all__.extend(phi.__all__)
 __all__.extend(phi3.__all__)
 __all__.extend(poolformer.__all__)
 __all__.extend(pop2piano.__all__)
+__all__.extend(prophetnet.__all__)
 __all__.extend(qwen2.__all__)
 __all__.extend(qwen2_moe.__all__)
 __all__.extend(reformer.__all__)

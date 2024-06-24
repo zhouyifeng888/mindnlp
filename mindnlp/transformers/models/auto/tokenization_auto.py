@@ -22,7 +22,8 @@ from collections import OrderedDict
 from typing import Dict, Optional, Union
 
 from mindnlp.utils import cached_file, is_sentencepiece_available, is_tokenizers_available, is_g2p_en_available, logging
-from ...configuration_utils import PretrainedConfig, EncoderDecoderConfig
+from ...configuration_utils import PretrainedConfig
+from ..encoder_decoder import EncoderDecoderConfig
 from ...tokenization_utils import PreTrainedTokenizer
 from ...tokenization_utils_base import TOKENIZER_CONFIG_FILE
 from .auto_factory import _LazyAutoMapping
